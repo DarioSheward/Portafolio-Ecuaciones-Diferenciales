@@ -1,0 +1,158 @@
+% Formato de portafolio
+% Documento adaptado de https://github.com/PlasmaPhysicsUdeC/FondecyTeX por Roberto Navarro <roberto.navarro@udec.cl>
+% Este documento es modular, es decir, esta separado en varios
+% archivos para facilitar su uso. Ver uso del paquete `subfiles`:
+% https://www.overleaf.com/learn/latex/Multi-file_LaTeX_projects
+
+\documentclass[twoside]{report}
+\usepackage[table]{xcolor}
+\usepackage[paper=letterpaper,left=3cm,right=3cm,top=3cm,bottom=2cm,includefoot]{geometry}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{multirow}
+
+\usepackage{hhline}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\setenumerate{itemsep=-3pt,topsep=3pt}
+\setdescription{itemsep=-3pt,topsep=3pt,leftmargin=!,labelwidth=4.5cm}
+\usepackage{pgfgantt}
+\usepackage{graphicx}
+\graphicspath{{./img/} {./tex/img/} {../img/} }
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\spanishdecimal{.}
+
+% bibliografia: descomente estas dos lineas para usar estilo numerico, e.g. [1].
+\usepackage[square,numbers,sort&compress]{natbib}
+\bibliographystyle{apsrev4-1}
+
+
+
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Para incluir codigos python.
+% Necesita opcion -shell-escape para compilar
+\usepackage[cachedir=/tmp/minted-caches]{minted}
+% Estilo para todo tipo de codigo
+\setminted{breaklines,
+	xleftmargin=\parindent,
+	numbersep=5pt,
+	bgcolor=lightgray!30,
+	fontsize=\small
+}
+\usemintedstyle{manni}
+% Estilo solo para python
+\setminted[python]{linenos,
+	texcomments,
+	mathescape,
+	texcomments,
+}
+
+% subfiles permite que el documento sea modular
+\usepackage{subfiles}
+
+%%% Comente/Descomente las siguientes lineas para cambiar la fuente del texto
+% \usepackage{DejaVuSans}
+% \renewcommand*\familydefault{\sfdefault}
+% \usepackage{sansmath}
+% \sansmath
+
+% \numberwithin{equation}{chapter}
+
+\pagestyle{fancy}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyfoot{}
+\fancyfoot[RE,RO]{\thepage}
+\fancyfoot[LO,LE]{\textcolor[RGB]{127,127,127}{Portafolio - Física Computacional II (2024)}}
+
+\fancyhead[LE,RO]{}
+\definecolor{tcc}{RGB}{217,217,217} % Table cell color
+
+\renewcommand\tabularxcolumn[1]{m{#1}}
+\setlength{\arrayrulewidth}{0.5pt}
+\renewcommand{\arraystretch}{2}
+
+\usepackage{listings} 
+\definecolor{bg}{rgb}{0.95,0.95,0.95} 
+\definecolor{keywords}{RGB}{0,0,255} 
+\definecolor{comments}{RGB}{0,128,0} 
+\definecolor{strings}{RGB}{163,21,21} 
+\lstset{ backgroundcolor=\color{bg}, basicstyle=\small, breaklines=true, commentstyle=\color{comments}\itshape, keywordstyle=\color{keywords}\bfseries, stringstyle=\color{strings}, numbers=left, numbersep=5pt, frame=single, rulecolor=\color{black}, xleftmargin=\parindent, showstringspaces=false, language=Python }
+
+
+% \renewcommand{\thesection}{\alph{section})}
+% \renewcommand{\thesubsection}{\alph{section}.\arabic{subsection}}
+\usepackage[colorlinks]{hyperref}
+\hypersetup{
+    citecolor=cyan!90!black,
+    urlcolor=cyan!80!purple
+}
+
+\begin{document}
+
+% ASEGÚRESE DE COLOCAR SUS DATOS EN LA PORTADA
+\subfile{tex/portada}
+
+
+\tableofcontents
+
+\nocite{*}
+%%% con \subfile se incluyen archivos externos
+\subfile{tex/introduccion}
+\subfile{tex/presentacion-estudiante}
+
+\part*{Evidencias de aprendizaje}  % cuerpo del portafolio
+\addcontentsline{toc}{part}{Evidencias de aprendizaje}
+\markboth{Evidencias de aprendizaje}{Evidencias de aprendizaje}
+%controles
+\subfile{tex/control_1}
+\subfile{tex/control_2}
+\subfile{tex/control_3}
+\subfile{tex/control_04}
+\subfile{tex/ej6_NR}
+%\subfile{tex/control_6}
+%guia 1
+\subfile{tex/numeros-de-catalan}
+\subfile{tex/secuencia_Lucas}
+\subfile{tex/exponencialTaylor_guia1}
+%guia 2
+\subfile{tex/g2_pesos}
+\subfile{tex/g2_ej8}
+\subfile{tex/guia_2_ej_9}
+%\subfile{}
+%guia 3
+%\subfile{tex/pesos_integracion}
+\subfile{tex/funcion_gamma}
+\subfile{tex/guia_3_matriz}
+%guia 4
+\subfile{tex/g4_ej5}
+\subfile{tex/g4_pts}
+\subfile{tex/g4_ej11}
+%guia 5
+\subfile{tex/g5_ej8}
+\subfile{tex/g5_legendre}
+\subfile{tex/g5_ej4}
+%guia 6
+%\subfile{}
+%\subfile{}
+%\subfile{}
+% Conclusiones y referencias
+\subfile{tex/conclusion-global}
+\subfile{tex/agrdecimientos}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Puede usar el capítulo de apéndice para agregar sus códigos completos si lo desea
+\appendix
+\subfile{tex/gravitacion_edo}
+%\subfile{tex/...}
+
+% lista de referencias guardadas en referencias.bib
+\bibliography{referencias}
+
+\end{document}
