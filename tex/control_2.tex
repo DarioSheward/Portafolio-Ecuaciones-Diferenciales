@@ -1,0 +1,101 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Control Gráficos Python}
+\label{g0_c2}
+\hfill \textbf{Fecha de la actividad:} 2 de noviembre de 2024
+
+\medskip
+
+En este capítulo revisamos las capacidades de un esquema de derivación numérica a través de Python. Graficando la función, su derivada analítica, numérica y el error entre ambas. Luego se comparan los errores para determinar con que funciones trabaja mejor el esquema.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Estimar numéricamente la derivada de una función $f$ con un esquema de derivación entregado, a través de un script de Python.
+\item Graficar 	en una figura la derivada analítica $f'(x)$, su estimación numérica y el error absoluto entre ambos.
+\item Probar el script con múltiples casos entregados.
+\end{itemize}
+
+Para el desarrollo de este capítulo se utilizará un archivo con tres series de datos, de igual longitud, donde la primera representa la variable independiente $x$, la siguiente es la variable dependiente $f$, representando alguna función con ruido, mientras la última serie representa la derivada analítica de $f$. Destacar que la primera serie es estrictamente creciente con valores equiespaciados.
+\section{Esquema de derivada numérica}
+Estimaremos numéricamente la derivada de $f$ a partir de los datos del esquema de derivación \eqref{g0_c2:eq:esqdev}.
+\begin{equation}\label{g0_c2:eq:esqdev}
+f'_{analitica}(x)=\frac{f(x-3h)-27f(x-h)+27f(x+h)-f(x+3h)}{48h}+\frac{9}{5!}f^{(5)}(\xi)h^4
+\end{equation}
+
+\begin{minted}{python}
+i=3
+dfn=np.zeros(506)
+x, f, df = np.loadtxt("data.dat").T # se importan los datos del archivo de datos y se les asigna una string.
+for i in range(3,509):
+    dfn[i-3]=float((f[i-3] - 27*f[i-1] + 27*f[i+1]-f[i+3])/(48*(x[i]-x[i-1])))	#Se establece la derivada numérica.
+\end{minted}
+Debido a que el esquema de derivadas ocupa datos a 3 posiciones de distancia, no seremos capaces de estimar la derivada de los datos extremos.
+\begin{minted}{python}
+dff=df[3:-3]
+#Se acomodan al tamaño de los arreglos.
+\end{minted}
+Se calcula el error absoluto: $E_{abs}=\left| f'_{num}(x) - f'_{analitica}(x) \right|$.
+\begin{minted}{python}
+error=np.abs(dfn-dff)
+#Se establece la diferencia entre las derivadas para el error absoluto.
+\end{minted}
+
+Tras esto se grafica, en la figura \ref{g0_c2:fig:control_2}, la derivada analítica de  $f'(x)$, su estimación numérica \eqref{g0_c2:eq:esqdev} y el error absoluto entre ambas, en función de x.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graficoControl2.png} 
+\caption{Gráfico, en función de $x$, de $f(x)$ de los datos entregados, sus derivadas y el error entre ellas.}\label{g0_c2:fig:control_2}
+\end{figure}
+
+\section{Uso del esquema en otras funciones}
+Se insertan nuevas funciones a estudiar con el esquema de derivación. El gráfico \ref{g0_c2:fig:control_21} tiene a $f(x)$. Mientras el segundo gráfico \ref{g0_c2:fig:control_22} tiene como $f$ una función compuesta de polinomios de Legrende\footnote{Estos polinomios también son estudiados en el capítulo \ref{g5_ej5}.} \eqref{g0_c2:legendre}, $f(x)=P_3(2\cdot P_5)$, donde:
+\begin{equation}\label{g0_c2:legendre}
+P_n(x)=\frac{1}{2^n n!}\frac{d^n}{dx^n}[(x^2-1)^n].
+\end{equation}
+A ambas funciones se les agrega un pequeño error al programarlas. 
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graficoControl2_1.png} 
+\caption{Gráfico, en función de $x$, de $f(x)=sin(x)$, sus derivadas y el error entre ellas.}\label{g0_c2:fig:control_21}
+\end{figure}
+\begin{minted}{python}
+gen = np.random.default_rng()	#Se genera ruido aleatorio.
+x = np.linspace(0, 2*np.pi, 256)	#Se genera un dominio deseado.
+f = np.sin(x) + gen.uniform(low=-1e-2, high=1e-2, size=x.size)	#Se evalúa el dominio en la función y se agrega el ruido.
+df = np.cos(x)	#Se establece la derivada analítica con la que comparar la derivada numérica de la linea anterior.
+\end{minted}
+\begin{minted}{python}
+legendre3= lambda x: (5*x**3-3*x)/2	#Se definen los polinomios de Legendre y sus derivadas
+legendre5= lambda x: (63*x**5-70*x**3+15*x)/8
+dl3 = lambda x: (15*x**2-3)/2
+dl5 = lambda x: (315*x**4-210*x**2+15)/8
+x = np.linspace(-0.7, 0.7, 512)
+for i in range(len(x)):
+	f[i] = legendre3(2*legendre5(x[i])) 	#Se evalúan los polinomios, luego se le agrega el ruido.
+	df[i] = dl3(2*legendre5(x[i])) *2*dl5(x[i])	#Se define la derivada analítica para compararla luego con la numérica.
+f=f+ 0.01 * np.random.randn(x.size)	#Se agrega el ruido.
+\end{minted}
+\begin{figure}
+\centering
+\includegraphics[scale=0.6]{../img/graficoControl2_2.png} 
+\caption{Gráfico, en función de $x$, de $f(x)=P_3(2\cdot P_5)$, sus derivadas y el error entre ellas.}\label{g0_c2:fig:control_22}
+\end{figure}
+\section{Análisis de resultados}
+Los gráficos \ref{g0_c2:fig:control_21} y \ref{g0_c2:fig:control_22} muestran como, con cantidades similares de ruido, las estimaciones realizadas son menos confiables en funciones compuestas (a la derecha de la figura \ref{g0_c2:fig:control_23}), específicamente, al acercarse la derivada a cero. Las funciones más simples como la sinusoidal presentan menos problemas al diferenciar, menos cercanías a cero, y con ellos menor error. Entonces este esquema resulta ideal para diferenciar funciones fundamentales.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.7]{../img/graficoControl2_3.png} 
+\caption{Errores numéricos de cada función por el esquema.}\label{g0_c2:fig:control_23}
+\end{figure}
+
+
+\section*{Conclusiones}
+Se pudo desarrollar el script para diferenciar y graficar cada función de manera exitosa, mediante un esquema de derivación entregado y scripts de Python. Luego se realiza un análisis respectos  los errores causados por el esquema para distintos tipos de funciones. A partir de esto se estiman  como las funciones que mejor trabajan con el esquema, generando menores errores, son las fundamentales o las con pocos puntos críticos, en lugar de compuestas. 
+\section*{Agradecimientos}
+A mi madre y a la cafeína.
+
+\end{document}

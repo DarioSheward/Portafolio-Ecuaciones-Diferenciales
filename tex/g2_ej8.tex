@@ -1,0 +1,92 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Diferenciación Numérica}
+\label{guia:2_derivadas_8}
+\hfill \textbf{Fecha de la actividad:} 29 de noviembre de 2024
+
+\medskip
+
+Durante este capítulo se revisan los errores de truncamiento y de redondeo de esquemas de derivación conocidos, mediante series de Taylor y álgebra, llegando a una expresión para determinar el error total de cada esquema.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Encontrar las fórmulas para las derivadas adelantadas, retrasadas y centradas a partir de $f(x+h)$, $f(x)$ y $f(x-h)$.
+\item Encontrar el error de truncamiento de cada una de las fórmulas.
+\item Determinar la mejor fórmula para derivarión numérica.
+\item Calcular el valor óptimo de h para minimizar el error de los esquemas anteriores y comparar los resultados.
+\end{itemize}
+\medskip
+Para este ejercicio se aplicarán las expansiones, alrededor de $h$, en series de Taylor para combinarlas y determinar las fórmulas solicitadas. Dejaremos todo en términos de $h$, $f(x+h)$, $f(x)$ y $f(x-h)$.
+\begin{align}
+f(x+h)=&f(x)+ f'(x)h + \frac{f''(x)}{2!}h^2 + \frac{f'''(x)}{3!}h^3 +...\\
+f(x-h)=&f(x)-  f'(x)h + \frac{f''(x)}{2!}h^2 -\frac{f'''(x)}{3!}h^3+... 
+\end{align}
+\section{Esquemas de Derivadas}
+Despejando el termino $f'(x)$.
+\begin{align}
+f'(x)=&\frac{1}{h}\left( f(x+h) - f(x) - \frac{f''(x)}{2!}h^2 -\frac{f'''(x)}{3!}h^3-... \right)\label{g2_ej8:eq_1_ne}\\
+f'(x)\approx& \frac{f(x+h)-f(x)}{h} \label{g2_ej8:adelantada}\\ \intertext{Sea \eqref{g2_ej8:adelantada} la fórmula de la derivada adelantada. En la siguiente sección revisaremos que pasó con los términos omitidos. Mientras, }
+f'(x)=&\frac{1}{h}\left( f(x) - f(x-h) + \frac{f''(x)}{2!}h^2 -\frac{f'''(x)}{3!}h^3-... \right) \label{g2_ej8:eq_2_ne} \\
+f'(x)\approx &\frac{f(x)-f(x-h)}{h}.\label{g2_ej8:retrasada} \\ \intertext{Sea \eqref{g2_ej8:retrasada} la fórmula de la derivada retrasada. }
+\end{align}
+Ahora sumaremos las expresiones \eqref{g2_ej8:eq_1_ne} y \eqref{g2_ej8:eq_2_ne} para determinar la fórmula de la derivada centrada.
+\begin{align}
+2h f'(x)=& f(x+h) -f(x-h) +2 \frac{f'''(x)}{3!}h^3 +...\\
+f'(x)=& \frac{f(x+h)-f(x-h)}{2h}- \frac{f'''(\chi)}{3!}h^2 \label{g2_ej8:centrada_2}\\
+f'(x)\approx& \frac{f(x+h)-f(x-h)}{2h}
+\end{align}
+La expresión \eqref{g2_ej8:centrada_2} es la fórmula de la derivada centrada junto a un término $\frac{f'''(\chi)}{3!}h^2$, sea este un valor de x que represente la suma de todos los siguientes términos de la serie de tal manera que la igualdad sea verdadera. \citep{navarro2024errores}. 
+\section{Errores de Truncamiento}
+Cuando truncamos las expresiones \eqref{g2_ej8:eq_1_ne} y \eqref{g2_ej8:eq_2_ne} se genera un error de truncamiento con dependencia directa a $h$.
+Sea este último es un número pequeño, es decir $h\ll 1$. Por ende el orden de magnitud del error dependerá también del orden de magnitud de $h$. Para representar ésto se utilizará la notación Big O. Esto para indicar la relación entre el orden de magnitud del interior de $O(n)$, n solo un ejmeplo.
+
+De las fórmulas \eqref{g2_ej8:adelantada} y \eqref{g2_ej8:retrasada} vemos que son truncadas en los términos $f''(x)h/2$ por lo que determinamos que el orden del error será de $O(h)$.
+En el caso de la serie de la derivada centrada, el mayor términos resumido por $\frac{f'''(\chi)}{3!}h^2$ es $\frac{f'''(x)}{3!}h^2$. Por ende diremos que el orden del error de la derivada centrada es $O(h^2)$.
+
+\section{Error de redondeo}
+Cada sistema de conteo tiene sus propias limitaciones y por cada evaluación realizada se le asocia un error al resultado, que llamaremos $\epsilon_n$, sea $n$ un subíndice indicando en que cálculo se produjo. Entonces tomamos $\bar{f(x+h)}=f(x+h)(1+\epsilon_{+h}$. Consideraremos los errores de redondeo en cada fórmula como:
+\begin{align}
+Error_{redondeo}{}~ derivada{}~ adelantada{}~ \leq&\left| \frac{f(x+h)}{h} \right|\epsilon_{+h} +\left| \frac{f(x)}{h} \right|\epsilon_0 \\
+Error_{redondeo}{}~ derivada{}~ retrasada{}~ \leq&\left|  \frac{f(x)}{h} \right|\epsilon_0 + \left| \frac{f(x-h)}{h} \right|\epsilon_{-h} \\
+Error_{redondeo}{}~ derivada{}~ centrada{}~ \leq&\left| \frac{f(x+h)}{h} \right|\epsilon_{+h} + \left| \frac{f(x-h)}{h} \right|\epsilon_{-h} 
+\end{align}
+Teniendo en cuenta que $|f(x \pm h)| \approx |f(x)|$ y $\epsilon_{0} \leq \xi$, $\epsilon_{+h} \leq \xi$, $\epsilon^{-h} \leq \xi$:
+\begin{align}
+Error_{redondeo}{}~ derivada{}~ adelantada{}~ \leq& 2\left| \frac{f(x)}{h}\right|\xi \\
+Error_{redondeo}{}~ derivada{}~ retrasada{}~ \leq& 2\left|  \frac{f(x)}{h} \right|\xi\\
+Error_{redondeo}{}~ derivada{}~ centrada{}~ \leq& 2\left| \frac{f(x)}{h} \right|\xi 
+\end{align}
+\section{Minimización del error absoluto}
+Considerando las secciones anteriores determinamos que el error total de cada esquema es:
+\begin{align}
+Error_{t}{}~ derivada{}~ adelantada{}~ \leq& \left|f''(x)h/2 \right|+ 2 \left| \frac{f(x)}{h}\right| \xi \\
+Error_{t}{}~ derivada{}~ retrasada{}~ \leq& \left|f''(x)h/2 \right| + 2 \left| \frac{f(x)}{h}\right| \xi \\
+Error_{t}{}~ derivada{}~ centrada{}~ \leq& \left|\frac{f'''(x)}{3!}h^2 \right|+ 2\left| \frac{f(x)}{h} \right|\xi
+\end{align}
+
+Notemos que las expresiones del error total de la derivada adelantada y retrasada son iguales.
+Para minimizarlo, consideramos a h una variable y derivamos con respecto a ella.
+Revisando los errores, uno por uno, empezamos con la derivada adelantada.
+\begin{align}
+\frac{d}{dh} Error_{t}=&\frac{d}{dh} \left( |f''(x)|h/2 + \frac{|f(x)|}{h} \xi \right) \\
+\frac{d}{dh}Error_t =& \frac{|f''(x)|}{2} - 2 \frac{|f(x)|}{h^2} \xi\\\intertext{Igualamos a 0:}
+h=&\sqrt{4\frac{|f(x)|}{|f''(x)|\xi}}
+\end{align}
+Sea este el $h$ que minimiza el error total de la derivada adelantada y retrasada 
+
+Ahora revisamos la derivada centrada: 
+\begin{align}
+\frac{d}{dh} Error_{t}=&\frac{d}{dh} \left( \frac{|f'''(x)|}{3!}h^2 + \frac{|f(x)|}{h} \xi \right) \\
+\frac{d}{dh}Error_t =& \frac{|f'''(x)|}{3} h - 2 \frac{|f(x)|}{h^2} \xi\\ \intertext{Igualamos a 0:}
+h=&\sqrt[3]{6\frac{|f'''(x)|}{|f(x)|\xi}}
+\end{align}
+Sea este $h$ el cual minimiza el error total para la derivada centrada.
+
+
+\section{Análisis de resultados}
+Los resultados se mostraron congruentes sin embargo las soluciones encontradas requieren de una buena documentación de el sistema con el que se calcula. Aun así, es recomendable darle prioridad al uso de la derivada centrada por su orden de magnitud en el error, en el caso de que sea posible usarla. Los resultados sirven para guiar e informar sobre la aplicación de estos esquemas, sin embargo su utilidad inmediata es poco notoria.
+\section*{Conclusiones}
+En este ejercicio se utilizaron las expansiones en series de Taylor y álgebra para poder determinar las capacidades numéricas de esquemas de derivadas conocidos, obteniendo resultados positivos y congruentes, sin embargo, requieren de información complementaria del sistema donde se aplica para resultar útil. A pesar de esto, considero los objetivos planteados como logrados.
+\end{document}

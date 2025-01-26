@@ -1,0 +1,122 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Método mejorado de Euler}
+\label{g4_ej5}
+\hfill \textbf{Fecha de la actividad:} 30 de noviembre de 2024
+
+\medskip
+
+Durante este capítulo, se revisan métodos de resolución de ecuaciones diferenciales analíticamente para determinar el orden de su error. Luego se comparan las capacidades numéricas de cada método aplicandolos a la ecuación logística.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Demostrar que el error local del método de Euler mejorado es del orden de $O(\Delta
+ t^3)$.
+\item Comparar el método de Euler mejorado con el método de de Runge-Kutta de segundo orden.
+\item Explicar las diferencias entre los métodos.
+\end{itemize}
+\medskip
+El método de Euler mejorado se utiliza para resolver ecuaciones diferenciales numéricamente mediante derivadas adelantadas y retrasadas. Para utilizarlo se requiere que la ecuación sé dé forma $\vec{x}'(t)=\vec{f}(\vec{x})$. La representación del método es\footnote{Adaptado de \citet{strogatz}.}:
+\begin{align}
+\vec{x}(t_{n+1})=&\vec{x}(t_n) + \frac{\Delta t}{2}\left[ \vec{f}(\vec{x}_n)+\vec{f}(\vec{k}_1) \right].\label{g4_ej5:metodo} \\ \intertext{Siendo $\vec{K}_1$:}
+\vec{k}_1=&\vec{x}_n+\Delta t \vec{f}(\vec{x}_n). \\ \intertext{Empecemos revisando el término $\vec{k}_1$ y lo denotémoslo como $\vec{x}_k$. Recordemos que $\vec{x}'(t)=\vec{f}(\vec{x})$ y $\Delta t = t_{n+1} - t_n$:}
+\vec{x}_k=&\vec{x}_n + \Delta t \vec{x}'_n .
+\end{align} Entoces interpretamos a $\vec{x}_k$ como una primera aproximación a $\vec{x}_{n+1}$.
+Luego, esta aproximación es evaluada en $\vec{f}(\vec{x})$ y es promediada con otra estimación. 
+
+\section{Error del método}
+Considerando que toda derivación numérica tiene un error de truncamiento revisamos la expansión de serie de $\vec{x}(t_k)=\vec{x}(t_n+\Delta t)$ y $\Delta t= t_n- t_k$, pero cada vez que no esté elevado a un número par se scara el signo negativo:
+\begin{align}
+\vec{x}(t_k)=&\vec{x}(t_n) - \Delta t \vec{x}'(t_n) + O(\Delta t^2) \\ \intertext{Los términos que no podemos determinar los agrupamos en $O(\Delta t^2)$, siendo el término mayor dependiente de $\Delta t^2$. Esto representa al error al determinar $\vec{x}(t_k)$.}
+\intertext{Sin embargo, necesitaremos un término más para reemplazar $\vec{f}(\vec{x}_n)$.}
+\vec{f}(\vec{x}_k)=&-\frac{\vec{x}_k- \vec{x}_n}{\Delta t}-\vec{f}'(\vec{x}_n)\Delta t +...\\
+\vec{f}(\vec{x}_k)=& \vec{x}_n + \vec{f}''(\vec{x}_n) \Delta t^2+... \intertext{Como no conocesmo la segunda derivada de $x$ la consideramos como parte del error}
+\vec{f}(\vec{x}_k)=& \vec{x}_n + O(\Delta t^2)
+\end{align}
+Ahora reemplazando en la expresión $\vec{f}(\vec{x}_n)+\vec{f}(\vec{x}_{k})$.
+\begin{align}
+\vec{f}(\vec{x}_n)+\vec{f}(\vec{x}_{k})=& 2 \vec{x}'_n + O(\Delta t^2)\\ \intertext{Al volver a \eqref{g4_ej5:metodo}:}
+\vec{x}(t_{n+1})=&\vec{x}(t_n) + \frac{\Delta t}{2}\left[ 2 \vec{x}'_n + O(\Delta t^2) \right]\\ \intertext{Así, queda demostrado que al determinar $\vec{x}_{n+1}$ habrá un error de $O(\Delta t^3)$:}
+\vec{x}(t_{n+1})=&\vec{x}(t_n)+ \Delta t \vec{x}'(t_n) + O(\Delta t^3)
+\end{align}
+\section{Comparación con el método de Runge-Kutta de segundo orden}
+Para comparar estos modelos primero describiremos el método de Runge-Kutta de orden dos. Éste también realiza aproximaciones al interior del intervalo para mejorar la precisión de la estimación final. El método consiste obtener la tasa de variación en el centro del intervalo y a partir de ésta estimar cuanto cambia la variable $x$, de forma similar al método de Euler común.
+\begin{align}
+\vec{k}_1=&\vec{f}(\vec{x}_n)\\
+\vec{k}_2=&\vec{f}\left(\vec{x}_n+ \frac{\Delta t}{2}\vec{k}_1 \right)\\
+\vec{x}_{n+1}=& \vec{x}_n + \Delta t \vec{k}_2 \label{g4_ej5:rk2}
+\end{align}
+Determinamos su error local tal como se hizo anteriormente. Notar como $\frac{\Delta t}{2}\vec{k}_1$ respresenta la variación de $x$ en la mitad de un paso $\Delta t$. Entonces consideramos que es una derivada centrada:
+\begin{align}
+\vec{f}\left(\vec{x}_n+ \frac{\Delta t}{2}\vec{k}_1 \right)=&\frac{(\vec{x_n}+\Delta t \vec{k}_1)-\vec{x}_n}{2\Delta t}+O(\Delta t^2)\\
+\vec{f}\left(\vec{x}_n+ \frac{\Delta t}{2}\vec{k}_1 \right)=& \frac{\vec{f}(\vec{x}_n)}{2}+ O(\Delta t^2)\\
+\vec{k}_2=& \frac{\vec{f}(\vec{x}_n)}{2}+ O(\Delta t^2)\\ \intertext{Reemplazando en \eqref{g4_ej5:rk2}:}
+\vec{x}_{n+1}=& \vec{x}_n + \Delta t\frac{\vec{f}(\vec{x}_n)}{2}+ O(\Delta t^3)
+\end{align}
+Podemos concluir que el error local del método de Runge-Kutta de segundo orden tiene un orden de error dependiente de $\Delta t^3$, al igual que el método de Euler mejorado.
+
+Para compararlos los aplicaremos al problema del capítulo \ref{g4_ej11}, entonces se grafica la población respecto al tiempo y el espacio de fases para revisar en que ocasiones los métodos presentan diferencias. 
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/g4_ej5_3.png}
+\caption{Aplicación de los métodos en la ecuación logística comparados con las soluciones analíticas, graficando tiempo normalizado contra población.}\label{g4_ej5:graf_ej5_tiempo}
+\end{figure}
+En la figura \ref{g4_ej5:graf_ej5_tiempo} se grafican múltiples soluciones con los métodos estudiados y se comparan con las soluciones analíticas. Es claro las diferencias son prácticamente imperceptibles a esta escala y que ambos métodos describen muy bien las soluciones.
+
+Al revisar el espacio de fases en \ref{g4_ej5:graf_ej5_0fases} podemos ver muy ligeras variaciones en las curvas de fase, con causa de como se calcula cada método debido a que las variaciones se presentan principalmente en las derivadas en los primeros tiempos.
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/g4_ej5.png}
+\caption{Apliación de los métodos en la ecuación logística, graficando su espacio de fases.}\label{g4_ej5:graf_ej5_0fases}
+\end{figure}
+
+Para la realización de los gráficos se programan los métodos en Python y se aplican a la función logística., como se muestra a continuación
+\begin{minted}{python}
+def dn(n):  #Se define la derivada de n normalizada para ser utilizada en los siguientes métodos.
+    return n-n**2
+def logi(t,n0):     #Se define la solución analítica.
+    return (n0*np.exp(t))/(1-(n0*(1-np.exp(t))))
+def EulerMejorado(t,n0,dn): #El método de Euler mejorado requiere conocer el primer punto, conocer la derivada de la variable a estimar y los pasos de tiempo.
+    dt=t[1]     #Se define el tamaño de los pasos de tiempo. Se toma el índice 1 debido a que t[0]=0.
+    n=np.empty(len(t))  
+    dns=np.empty(len(t))
+    n[0]=n0  
+    for i in range(len(t)-1):   #Se realiza el ciclo por el tamaño del arreglo t-1. Para evitar pasarse del tamaño de los arreglos.  
+        k1= n[i] +dt*dn(n[i])   #Se define el valor k1.
+        dns[i]=(dn(n[i])+dn(k1))*0.5  #Se guarda la variación aplicada a cada paso de tiempo para luego graficarlo en el espacio de fases.
+        n[i+1]=n[i]+dt*(dns[i]) #Se estima la siguiente posición a partir de la derivada y el paso de tiempo.
+    return n , dns  #Se regresa los valores de n a través del intervalo de tiempo.
+def RungeKutta2(t,n0,dn):   #El método de RK-2 requiere conocer el primer punto, conocer la derivada de la variable a estimar y los pasos de tiempo.
+    dt=t[1] 
+    n=np.empty(len(t))
+    dns=np.empty(len(t))
+    n[0]=n0
+    for i in range(len(t)-1):   #Este método define dos sumandos a partir las variaciones que debería sufrir n y n+1(provisoriamente) en un período dt, para promediarlos y determinar definitivamente n+1.
+        k1=dt*dn(n[i])          #Se determina el valor de k1.
+        k2=dt*dn(n[i]+k1)       #Determina el valor de k2
+        dns[i]=(k1+k2)/dt      #Se utiliza otra acepción del método para definir la variación aplicada a dt.
+        n[i+1]=n[i]+0.5*dns[i]
+    return n,dns    #Se regresa los valores de n a través del intervalo de tiempo.
+
+#condiciones iniciales
+t=np.linspace(0,10,1000)
+n0s=np.linspace(0.1,3,5)    
+for n0 in n0s:  #Ciclo donde se evalúan y grafican las soluciones
+    n_euler , dn_Eueler= EulerMejorado(t,n0,dn)    #Se aplican los métodos para cada condición inicial.
+    n_RK, dn_RK =RungeKutta2(t,n0,dn)
+    lg_n=logi(t,n0)
+    plt.plot(t,n_euler, label=f'E-n_0={round(n0,3)}') #Se grafican todas las soluciones.
+    plt.plot(t, n_RK, label=f'RK-n_0={round(n0,3)}')
+    plt.plot(t,lg_n, linestyle='--', label=f'S.A.n_0={round(n0,3)}')
+    plt.plot(n_euler, dn_Eueler, label=f'E-n_0={round(n0,3)}') #Se grafican todas las soluciones en el espacio de fases. (Estas dos líneas se utilizan aparte de las anteriores para graficar.)
+    plt.plot( n_RK, dn_RK , label=f'RK-n_0={round(n0,3)}')  
+\end{minted}
+\section{Análisis de resultados}
+El desarrollo de la actividad indicó siempre una capacidad numérica similar para ambos métodos, para lograr representar alguna diferencia entre ellos con material gráfico se tuvo que llevar al espacio de fases para poder mostrar las diferencia que produce cada método. Las diferencias son pequeñas, pero pueden marcar la diferencia de tratarse de un sistema delicado a replicar físicamente. Por último se sugiere revisar los errores generados por los métodos con datos recogidos de una réplica menos delicada del modelo, con el afán de determinar que método resuelve mejor la ecuación diferencial. Aun así, cada uno de los resultados logró caracterizar a los métodos, sin llevarlo a extremos.
+\section*{Conclusiones}
+El ejercicio necesita de herramientas de cálculo y álgebra para poder demostrar la capacidad numérica de cada método cuando, en específico sus limitaciones expresadas a través de truncamientos de expansiones de series de Taylor. Para comparar el comportamiento causado por las formas de los métodos se recurrió a graficar las soluciones de la ecuación logística, lográndolo mediante el espacio de fases. Dicho ésto, se consideran los objetivos planteados como logrados.
+\section*{Agradecimientos}
+A mi madre y al profesor por dar un poco más de plazo. Espero poder aprovecharlo para realizar el mejor de los trabajos posibles.
+\end{document}

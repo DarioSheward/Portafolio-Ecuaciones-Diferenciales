@@ -1,0 +1,131 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Mitigación de errores a través de esquemas de derivadas}
+\label{g2_ej9}
+\hfill \textbf{Fecha de la actividad:} 6 de noviembre de 2024
+
+\medskip
+A través de este capítulo se exploran las capacidades de esquemas de derivación centrada, la relación de estos con los errores de ruido y como complementar este método con otros algoritmos. En este caso se probó la suavización de los datos mediante el filtro de la media móvil. Obteniendo resultados prometedores.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Programar la derivada centrada de una función.
+\item Describir métodos de mitigación de ruido en la derivada.
+\end{itemize}
+
+\section{Esquemas de derivación centrados programados}
+Un esquema de derivada centrada consiste en encontrar la pendiente de la recta entre 2 puntos equidistantes a un punto en el centro de éstos. Expresado como:
+
+\begin{equation}\label{g2_ej9:esquema}
+f'(x)= \lim_{h\rightarrow 0} \frac{f(x+h)-f(x-h)}{2h} + \frac{1}{3!}f'''(x)h^2+... \quad.\footnote{Expresión proveniente de la diferencia entre las expansiónes en serie de Taylor de $f(x+h)$ y $f(x-h)$.}
+\end{equation}
+
+Para aplicar este esquema numéricamente tendremos que truncarlo e ir evaluando punto por punto, con datos conocidos de índice consecutivo y equidistantes. \\
+
+Consideremos $h=\Delta \cdot l$, para llamar a $l$ los índices desplazados.
+
+A continuación se presenta el script de Python escrito para resolver este problema. Queda el código explicado en los comentarios del mismo.
+\begin{minted}{python}
+def derivadacentrada(fx,x,o): #'fx' sea un arreglo con las x's ya evaluadas en la función.
+    
+    l=o*2   #'o' sea la cantidad de datos entre el x y donde se evalúa para la derivada. Se duplica para trabajar desde solo un lado.
+    x_1=x[l:-l]               #'x' sea el conjunto de x's a evaluar.
+    n=len(x) -l
+    df=np.zeros(n)            #Se prepara un arreglo para guardar el valor de las derivadas
+    for i in range(n):        #Se inicia la revision de cada indice de los arreglos.
+        dx=np.abs(x[i+l]-x[i]) #Se define la distancia entre los puntos a evaluar.
+        if dx!=0:
+            df[i]=(fx[i+l]-fx[i])/(dx)  #Se considera el doble de la distancia 'o', para así calcular 'df[i+o]'
+        else:
+            df[i]=np.nan
+    return x_1, df #La función devuelve el conjunto de x cuyas derivadas se calcularon, junto a éstas últimas.
+\end{minted}
+
+\subsection{Aplicación}
+
+Se nos solicita el aplicar el código para observar el error de la estimación numérica al ingresar un arreglo de datos y la función seno a la cual se le aplicó un ruido $|r|\leq 10^{-2}$, programado como se muestra a continuación.
+
+\begin{minted}{python}
+from numpy import pi, linspace, sin, random
+gen = random.default_rng()
+x = linspace(0, 2*pi, 256)
+f = sin(x) + gen.uniform(low=-1e-2, high=1e-2, size=x.size)
+\end{minted}
+
+
+Entonces se revisan varias aproximaciones con distintas distancias hacia el punto \texttt{x[i+(l/2)]} evaluado. Destacar que cada punto del arreglo \texttt{x} está equiespaciado del siguiente.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graf_ej9_1.png}
+\caption{Estimación numérica de derivada centrada de un punto.} \label{g2_ej9:fig:graf_0}
+\end{figure}
+
+En la figura \ref{g2_ej9:fig:graf_0} se puede observar el error agregado se ve amplificado al diferenciar el arreglo ingresado al algoritmo.
+
+\section{Método de mitigación de ruido durante la derivación de una serie de datos}
+
+A continuación se realizan otras iteraciones de las estimaciones, pero con mayor cantidad de puntos de diferencia al centro evaluado, sean las figuras \ref{g2_ej9:fig:graf_1} y \ref{g2_ej9:fig:graf_2} ejemplo de esto.
+
+De notar es como el error en la figura \ref{g2_ej9:fig:graf_1} pasa a ser del orden del ruido. Sin embargo, al seguir aumentando $l$ el error absoluto no tiende a disminuir más.
+
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graf_ej9_8.png}
+\caption{Estimación numérica de derivada centrada de ocho puntos.} \label{g2_ej9:fig:graf_1}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graf_ej9_20.png}
+\caption{Estimación numérica de derivada centrada de veinte puntos.} \label{g2_ej9:fig:graf_2}
+\end{figure}
+
+Es claro que una manera sencilla de mitigar el error causado por el ruido es tomar puntos un poco más alejados. Otra opción es utilizar un esquema de derivación centrado y compuesto.
+
+Existen otros métodos numéricos para disminuir este error, por ejemplo, método para suavizar la curva de la función entregada. En esta ocasión utilizamos el filtro de la media móvil \citep{gaussianwaves2010}. Este funciona como un filtro de paso bajo. 
+
+La media móvil es un filtro el cual genera un conjunto de datos creados a partir de promedios de subconjuntos de datos del arreglo al que es aplicado. En los casos que mostraremos a continuación se habrán utilizado subconjuntos de 5 datos.
+
+\begin{minted}{python}
+f_suave=np.convolve(f,np.ones(5)/(5), mode='valid')
+x_2=x_1[:len(f_suave)]
+x_3,dfs=ej.derivadacentrada(f_suave,x_2,l)
+\end{minted}
+Se utiliza la función de \texttt{numpy} de convolución por fines prácticos y por como está definido de media móvil. En una futura revisión del portafolio espero poder mostrar como se aplica la convolución más detalladamente.
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graf_ej9_1_s.png}
+\caption{Estimación numérica de derivada centrada de un punto con filtro de media móvil.} \label{g2_ej9:fig:graf_1s}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graf_ej9_2_s.png}
+\caption{Estimación numérica de derivada centrada de dos puntos con filtro de media móvil.} \label{g2_ej9:fig:graf_2s}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/graf_ej9_20_s.png}
+\caption{Estimación numérica de derivada centrada de veinte puntos con filtro de media móvil.} \label{g2_ej9:fig:graf_20s}
+\end{figure}
+
+\section{Análisis de resultados}
+Es notorio cómo la función entregada no siempre es suave, debido al ruido, resultando en una derivación con errores altos, incluso mayores al ruido incluido.
+
+La derivación numérica por sí sola, no presenta resultados satisfactorios, por lo que se aplican el filtro de la media móvil, potenciando las capacidades del esquema \eqref{g2_ej9:esquema}.
+
+Se muestran en las figuras \ref{g2_ej9:fig:graf_1s}, \ref{g2_ej9:fig:graf_2s} y \ref{g2_ej9:fig:graf_20s} las ventajas y desventajas de aplicar este algoritmo, por ejemplo, al comparar \ref{g2_ej9:fig:graf_0} y \ref{g2_ej9:fig:graf_1s} es notoria la disminución en el error, aplicando el mismo método de derivación. 
+
+En el caso de \ref{g2_ej9:fig:graf_2s}, se presenta un error simil a aquel en la figura \ref{g2_ej9:fig:graf_1}, el cual requirió de $l=8$ para llegar a esos errores, es decir perdió ocho datos en cada extremo del conjunto, mientras que al suavizar los datos se logró mayor precisión con menor pérdida de datos extremos.
+
+Ahora, al considerar el caso extremo de \ref{g2_ej9:fig:graf_20s}, se observa como el suavizar la función y luego derivar con un esquema centrado de $l$ muy grande causa problemas de desplazamientos en el eje x de la curva.
+
+\section*{Conclusiones}
+Existen varios factores y métodos con los que se trabajaron y experimentaron. En primera instancia se revisaron las capacidades de los esquemas de derivación centrada por sí mismos. También se revisaron esquemas de derivación compuesta y centrada, sin embargo, los resultados no presentaron nada relevante. Para luego, implementar el filtro de la media móvil, resultando en errores del mismo orden de magnitud con menor perdida de datos. Se logró observar como el proceso de derivación numérica es complementable con tras herramientas y como han de implementarse con cuidado. Con esto el ejercicio obtuvo resultados positivos, logrando los objetivos propuestos.
+
+\end{document}

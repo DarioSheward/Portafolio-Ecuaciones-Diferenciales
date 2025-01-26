@@ -1,0 +1,124 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Secuencia de Lucas}
+\label{g1_ej7}
+\hfill \textbf{Fecha de la actividad:} 10 de noviembre de 2024
+
+\medskip
+
+Este capítulo explora las secuencias de Lucas, pero especialmente la de Fibonacci. Se utilizan principalmente herramientas de programación para generar esquemas gráficos para analizar y argumentar los comportamientos presentados.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Estudiar la convergencia de la razón entre términos consecutivos de la secuencia de Fibonacci, con distintos valores iniciales.
+\item Graficar secuencias de Lucas con distintos factores P y Q.
+\item Interpreta los gráficos obtenidos de las secuencias de Lucas.
+\end{itemize}
+\section{Secuencia de Fibonacci con distintos valores iniciales}
+Consideremos la secuencia de Fibonacci determinada por la relación de recurrencia:
+
+\begin{equation}
+F_{n}=F_{n-1}+ F_{n-2}
+\end{equation}
+
+En esta ocasión estudiaremos la relación $R_n = \frac{F_{n}}{F_{n-1}}$, para comprobar si para cualquier par de valores iniciales, esta relación converge al numéro áureo. Para esto se escribió un  script de Python que seleccionaba valores iniciales de valor absoluto menor a 20 y distinto a 0. Luego, se grafica \ref{fig:fib} cada conjunto de puntos que representan las relaciones.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.68]{../img/SecuenciaFibonacciValoresIniciales.png} 
+\caption{Patrones de convergencia de $R_n$ en la secuencia de Fibonacci para varios valores iniciales.}\label{fig:fib}
+\end{figure}
+
+\section{Secuencia de Lucas}
+
+Para dos números arbitarios, $P$ y $Q$, distintos de 0, se define $U_n (P,Q)$ bajo las condiciones:
+\begin{align*}
+U_0=0,\quad U_1=1, \quad y \quad U_n =PU_{n-1}-QU_{n-2}.
+\end{align*}
+
+Sea esta la secuencia de Lucas, la cual presenta comportamientos súmante curiosos para los distintos valores de P y Q. En esta ocasión exploraremos distintos casos, graficando $R_n$ para cada uno. Para esto se escribió un script de Python que calcula los primeros 50 términos de la secuencia.
+
+\begin{minted}{python}
+def secLucas(p,q):
+    u=np.empty(50)
+    u[0]=0
+    u[1]=1
+    i=2
+    for i in range(2,50):
+        u[i]=(p*u[i-1])-(q*u[i-2])
+    Rn=u[2:]/u[1:-1]
+    return u,Rn
+\end{minted}
+
+La función definida en el script recibe los valores de P y Q para luego a partir de ellos definir los valores a guardar en el arreglo \texttt{u}. Por otro lado, se calcula $R_n$ y se registra en su propio arreglo. Tras esto se grafica $R_n$ en función de los valores de $n$.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/secuencialucas_0.png} 
+\caption{Gráfico de secuencia Lucas (Fibonacci) y $R_n$ de esta, convergiendo al número áureo.}\label{fig:lucas_0}
+\end{figure}
+
+El primer caso a graficar será la misma secuencia de Fibonacci (\ref{fig:lucas_0}), la cual es la secuencia de Lucas donde $P=1$ y $Q=-1$.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/secuencialucas_1.png} 
+\caption{Gráfico de secuencia Lucas especifica y $R_n$ de esta.}\label{fig:lucas_1}
+\end{figure}
+
+El ejercicio propuesto ofrece los siguientes valores a evaluar para la secuencia:
+
+\begin{itemize}
+\item $P=3$ y $Q=1$, representada en la figura \ref{fig:lucas_1}.
+\item $P=2$ y $Q=1$, representada en la figura \ref{fig:lucas_2}.
+\item $P=1$ y $Q=1$, representada en la figura \ref{fig:lucas_3}.
+\end{itemize}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/secuencialucas_2.png} 
+\caption{Gráfico de secuencia Lucas especifica y $R_n$ de esta.}\label{fig:lucas_2}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/secuencialucas_3.png} 
+\caption{Gráfico de secuencia Lucas especifica y $R_n$ de esta.}\label{fig:lucas_3}
+\end{figure}
+
+
+\section{Análisis de Resultados}
+
+\subsection*{S. de Fibonacci con distintos valores iniciales}
+Si bien se escogieron valores iniciales acotados, se pudo tomar variedad de casos entre números enteros, logrando mostrar la rápida convergencia de la relación en cada caso. En su mayoría, dentro de lo que se alcanza a observar en el gráfico \ref{fig:fib}, las relaciones de $n=10$ en adelante ya conservan el número áureo como valor $R_n$.
+
+\subsection*{Probando la secuencia de Lucas}
+
+En la figura \ref{fig:lucas_0} observamos la secuencia de Fibonacci. Como se mencionó anteriormente, convergen al número áureo ya a partir de $n=10$ aproximadamente.
+
+En el caso de la figura \ref{fig:lucas_1} observamos como cada valor de $U_n$ es mayor al anterior y la relación entre ellos tras el quinto $n$ es constante. Dándonos a entender que conociendo uno de los números de la secuencia podremos conocer el valor otro de la secuencia, siempre que sea uno donde la relación se mantiene constante, y conociendo a cuantos $n$'s de distancia está. 
+
+\begin{equation}
+U_{m}=U_{n}^{2.618(m-n)}
+\end{equation}
+Sea m el índice que se quiere conocer y $n$ el conocido.
+
+La figura \ref{fig:lucas_2} La secuencia presenta un crecimiento lineal. El título del gráfico presenta un grave abuso del lenguaje, ya que dice converger en el último término calculado y al revisar \ref{fig:lucas_22} se observa como $R_n$ no termina de converger. Podemos suponer que converge a 1. Para comprobarlo se sugiere seguir analizando numéricamente la secuencia, porque no se le pueden realizar estudios de convergencia como a las series.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/2secuencialucas_2.png} 
+\caption{Gráfico de secuencia de Lucas especifica y $R_n$ de esta, con rango de $n$ ampliado.}\label{fig:lucas_22}
+\end{figure}
+
+Para finalizar, la figura \ref{fig:lucas_3} es un caso muy especial, ya que se puede observar una periodicidad en $U_n$ lo cual hace a su $R_n$ diverge.
+
+\section*{Conclusiones}
+
+Si bien el ejercicio es bastante conciso en el uso de herramientas para poner a disposición los casos para analizar numéricamente, el poder reconocer las características de estas secuencias de forma analítica puede ahorrar tiempo de procesamiento al generar estimaciones. Los resultados revelaron aspectos variados de las posibilidades de las secuencias de Lucas, lo cual estaba dentro de los objetivos y se espera poder aplicarlos en próximas ocasiones.
+
+\section*{Agradecimientos}
+A mi compañero Lucas Mellado por "darle" nombre a esta secuencia y por las conversaciones sobre la vida.
+\end{document}

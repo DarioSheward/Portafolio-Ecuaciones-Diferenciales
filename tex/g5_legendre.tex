@@ -1,0 +1,96 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Ceros de polinomios de Legendre}
+\label{g5_ej5}
+\hfill \textbf{Fecha de la actividad:} 19 de noviembre de 2024
+
+\medskip
+
+A través de este capítulo se revisan formas de encontrar ceros de polinomios de Legendre en Python, una forma numérica, con el método de la secante, y otra forma mediante funciones de numpy. Se comparan y se muestra la superioridad de los métodos numéricos.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Encontrar los ceros de polinomios de Legendre numéricamente.
+\item Comparar los resultados con las funciones para encontrar raíces de numpy.
+\end{itemize}
+
+\section{Polinomios de Legendre}
+Presentes en múltiples problemas físicos, incluso ya se utilizaron en el capítulo \ref{g0_c2}. Definida como
+
+\begin{equation}
+P_n(x) = \frac{1}{2^ !} \frac{d^n}{dx^n} \left( x^2 - 1 \right)^n ,
+\end{equation}
+conocida como la fórmula de Ivory-Jacobi \citep{perez2021}.
+Se nos solicita encontrar los ceros de $P_2$, $P_3$ y $P_5$ en el rango $|x|\leq 1$. También nos solicita calcular la derivada numérica y comparar nuestros resultados de ceros con \texttt{numpy.polynomial.legendre.legroots}.
+
+Para esto se calculan $P_2$, $P_3$ y $P_5$ a mano para evitar errores numéricos de base.
+\begin{minted}{python}
+P2= lambda x: (3*x**2-1)/2
+P3= lambda x: (5*x**3-3*x)/2
+P4= lambda x: (35*x**4-30*x**2+3)/8
+\end{minted}
+
+Ante las características del problema, para encontrar los ceros usaremos el método de la secante. Donde cada aproximación que se hace a la raíz es definida por el punto anterior menos la razón entre la imagen de ese punto y la derivada atrasada de la función en ese punto. Suele reiterarse hasta acercarse lo deseado a un cero. Definida en Python como:
+
+\begin{minted}{python}
+def secante( x, f,h=1/50, tol=1e-10):	#Se define como función al método de la secante.
+    while np.abs(f(x))>tol:	#Mientras la imagen de la raíz no llegue a estar dentro de la tolerancia el proceso se reiterará.
+        x= x-(f(x)/((f(x+h)-f(x-h))/(2*h)))	#Se estima un punto más cercano al cero a partir de la derivada retrasada.
+    return x		#Se retorna la estimación del cero.
+\end{minted}
+En este caso se le aplica una tolerancia para llegar a un resultado antes. 
+
+Después estimamos los ceros a través de \texttt{numpy.polynomial.legendre.legroots}, ingresando los coeficientes de cada polinomio.
+\begin{minted}{python}
+coefP2=[0.5, 0, 1.5]
+coefP3=[0,-1.5,0,2.5]
+coefP4=[3/8, 0, 30/8, 0, 35/8]
+
+n3= np.polynomial.legendre.legroots(coefP3)
+n2=np.polynomial.legendre.legroots(coefP2)
+n4=np.polynomial.legendre.legroots(coefP4)
+\end{minted}
+
+\begin{minted}{python}
+seedsP2= np.linspace(-1,1,8)	#Se dispersan las semillas por el intervalo.
+seedsP3= np.linspace(-1,1,8)
+seedsP4= np.linspace(-1,1,8)
+cerosP2=np.empty(8)		#Se preparan los arreglos para los cerros de cada polinomio.
+cerosP3=np.empty(8)
+cerosP4=np.empty(8)
+for i in range(8):
+    cerosP2[i]=secante(seedsP2[i],P2)
+    cerosP3[i]=secante(seedsP3[i],P3)
+    cerosP4[i]=secante(seedsP4[i],P4)
+cerosP2=np.unique(cerosP2)		#Se eliminan las redundancias.
+cerosP3=np.unique(cerosP3)
+cerosP4=np.unique(cerosP4)
+\end{minted}
+Puede ocurrir que más de una semilla tienda al mismo cero y por la tolerancia elegida y al eliminar redundancias éstas no se eliminen, sin embargo, para efectos prácticos del gráfico, esto es casi imperceptible.
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/legendre_graf.png}
+\caption{Gráfico de los polinomios de Legendre de $n \in \{2,3,4\}$, junto a sus correspondientes ceros y otras estimaciones.}\label{g5_ej5:graf}
+\end{figure}
+
+\section{Derivada numérica de los polinomios de Legendre}
+
+También se nos solicita calcular la derivada numérica de los polinomios, que en realidad no fue del todo necesario por como está definido el método de la secante, que al fin y al cabo es el método de Newton-Raphson pero calculando la derivada numérica directamente y no en otra función. Aun así, se graficó con el fin de completar la instrucción, figura \ref{g5_ej5:graf1}. Se utilizó el esquema de derivada atrasada para considerar lo mismo que utilizó el método de la secante.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/legendre_graf_1.png}
+\caption{Derivadas númericas de los polinomios estudiados.}\label{g5_ej5:graf1}
+\end{figure}
+
+\section{Análisis de resultados}
+
+Los resultados de las estimaciones de ceros realizados por el método de la secante y por la función de \texttt{numpy} fueron muy distintos. En la figura \ref{g5_ej5:graf} se puede ver que nuestra estimación estuvo mucho más cercana a los ceros exactos que el paquete de Python. En la documentación de este último \citep{numpy} se menciona como su método de obtención de ceros basado en los valores propios de la matriz compañera del polinomio tiende a generar errores en varios casos. Se menciona como las raíces cercanas al origen sirven más como semillas para, con el método de Newton-Raphson o similares, pueda estimar el cero, pero no indica porque no es el resultado exacto. Podría suponer que el método de la matriz compañera tiene problemas de redondeo al tratarse de valores pequeños trabajados como matriz. Considerar, que a pesar de todo, \texttt{.legroots} logra llegar a la cantidad de raíces e intervalos donde se han de localizar.
+
+\section*{Conclusiones}
+Durante este capítulo se logró comparar los ceros obtenidos numéricamente, mediante el método de la secante, con los ceros determinados por funciones de paquetes de Python. 
+Es impresionante cuan certero pueden ser los métodos numéricos bien aplicados, y como siempre se han de revisar los resultados obtenidos gracias a herramientas empaquetadas. Fue desafiante el programar la fórmula Ivony-Jacobi, lamentablemente quedará pendiente para una revisión, ya que el determinar las funciones con las herramientas computacionales para solucionarlo de forma analítica con las que contaba en el momento no eran suficientes\footnote{El uso de clases en Python hubiera servido mucho.}. Aun así, los métodos numéricos, como en este caso el de la secante, funcionan muy bien para este tipo de problemas. Terminando, los resultados fueron sorprendentes y satisfactorios, mientras los objetivos fueron logrados.
+
+\end{document}

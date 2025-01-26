@@ -1,0 +1,190 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Problema de Kepler}
+\label{g4_ej1}
+\hfill \textbf{Fecha de la actividad:} 12 de noviembre de 2024
+
+\medskip
+
+En esta ocasión se revisará la ley de gravitación universal, normalizando su ecuación y solucionándola numéricamente para el problema de Kepler, utilizando el método del salto de la rana. A partir de esto, se analizarán los resultados y se comprobarán las leyes planetarias de Kepler, con algunos inconvenientes.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Reescribir la ecuación de tal modo que solo dependa de una velocidad normalizada.
+\item Resolver la ecuación numéricamente con el método del salto de la rana.
+\item Comprobar si se conserva el momentum angular y la energía.
+\item Describir trayectorias elípticas y comprobar si las leyes de Kepler se cumplen en estas.
+\end{itemize}
+Abordamos el problema de Kepler en un sistema heliocéntrico , considerando solo un cuerpo pequeño, como un cometa, orbitando el sol de masa M. Sea la modelo que gobierna la aceleración del cometa \eqref{g4_ej1:eq:gog}
+\begin{align} \label{g4_ej1:eq:gog}
+\frac{d^2 \vec{r}}{dt^2}(t) = - \frac{GM}{|\vec{r}|^3}\vec{r} 
+ \end{align}
+\section{Normalización de la ecuación}
+Buscamos mostrar como la ecuación es \eqref{g4_ej1:eq:gog} es normalizable con $\tau=t\sqrt{GM/R_0^3}$  y $\vec{\xi}=\frac{\vec{r}}{R_0}$.
+
+
+Para esto se utiliza la regla de la cadena, sin embargo, en esta ocasión un abuso de notación. Reemplazamos en \eqref{g4_ej1:eq:gog}.
+
+\begin{align}
+\frac{d^2 \vec{\xi} R_0}{d(\frac{\tau}{\sqrt{GM/R_0^3}})^2}=&-\frac{Gm_1m_2}{|\vec{\xi}|^3 R_0^3}\vec{\xi}R_0\\
+\frac{GM}{R_0^2}\frac{d^2 \vec{\xi}}{d\tau^2}=&-\frac{GM}{|\vec{\xi}|^3 R_0^2}\vec{\xi}\\
+\frac{d^2 \vec{\xi}}{d\tau^2}=&-\frac{\vec{\xi}}{|\vec{\xi}|^3 }\label{g4_ej1:normalizada}
+\end{align}
+
+Sea la ecuación \eqref{g4_ej1:normalizada} la versión normalizada de la ley de gravitación universal.
+Ahora, buscamos las condiciones iniciales para \eqref{g4_ej1:normalizada}. 
+A partir de la misma regla de la cadena vemos:
+
+\begin{align}
+\vec{r}(0)=&R_0 \hat{x}\\
+\vec{\xi}(0)=& R_0 /R_0 \hat{x}\\
+\frac{d\vec{r}}{dt}(0)=& v_0 \hat{y} \\
+\frac{d\vec{\xi}}{d\tau}(0)=&\frac{v_0} {\sqrt{GM/R_0}}\hat{x}
+\end{align}
+
+Entonces la velocidad normalizada la describiremos como: $\tilde{v}_0=\frac{v_0} {\sqrt{GM/R_0}}$. Las condiciones iniciales serán $\vec{\xi}= \hat{x}$ y $\frac{d\vec{\xi}}{d\tau}(0)=\tilde{v_0} \hat{y}$.
+Entonces queda una ecuación diferencial adimensional.
+\section{Método del salto de la rana}
+Con el fin de solucionar la ecuación numéricamente se utilizará el método del salto de la rana \citep{navarro2024edos} para estimar los valores de la posición y velocidad del cometa.\\
+Para utilizar este método se debe evaluar las funciones de manera intercalada, en pasos de $\Delta \tau$, para la velocidad en pasos semi-enteros, mientras que la posición en pasos enteros.
+\begin{align}
+\frac{d\vec{\xi}}{d \tau}\left(\tau+\frac{\Delta \tau}{2}\right)=&\frac{d\vec{\xi}}{d \tau}(\tau)+\frac{\Delta \tau}{2}\frac{d^2\vec{\xi}}{d \tau^2}(\tau)\\
+\vec{\xi}(\tau+\Delta \tau)=&\vec{\xi}(\tau)+\Delta \tau\frac{d\vec{\xi}}{d \tau}\left(\tau+\frac{\Delta \tau}{2}\right)
+\end{align}
+
+Entonces a la hora de calcular se empezará con el primer semi-paso de la velocidad, luego, el paso completo de la posición, para continuar con el siguiente semi-paso de la velocidad  y volver a realizar esta secuencia.
+
+\begin{minted}{python}
+def SaltaSalta_ej1_2(v0n):    # Solicitamos la velocidad normalizada.
+    # Parámetros para la simulación numérica:
+    dt = 0.01                       # Paso de tiempo.
+    pasos = 10000                    # Número de pasos de tiempo.
+    r = np.empty((pasos,2))        # Guardamos espacio para registrar las posiciones y velocidades de cada masa.
+    v = np.empty((pasos,2))
+    a= np.empty((pasos,2))
+    # Se definen condiciones iniciales.
+    r[0] = np.array([1.0,0.0])
+    v[0] = np.array([0.0,float(v0n)])
+    a[0]=np.zeros(2)
+    # Se lleva a cabo el método del salto de la rana, estimando la velocidad a medio paso en adelante, luego evaluando la posición en un paso completo, para dar otro medio paso en la velocidad.
+    for n in range(pasos-1):
+        v[n] = v[n] + 0.5*dt * aceleracion(r[n])
+        r[n+1] = r[n] + dt * v[n]
+        a[n+1]=np.array(aceleracion(r[n+1])[0],aceleracion(r[n+1])[1])
+        v[n+1] = v[n] + 0.5*dt * aceleracion(r[n+1])
+    return r , v, a
+\end{minted}
+
+Sean los resultados de aplicar el método arreglos de la posición y velocidad del cometa durante 15 unidades de tiempo normalizado. Graficamos para distintos valores iniciales de velocidad en la figura \ref{g4_ej1:fig:graf_c4_0}. Consideramos solo velocidades donde el cuerpo quede orbitando el sol, sean estos los casos que sirvan para revisar las leyes de Kepler.
+
+Para graficar estos casos se usa un ciclo \texttt{for}, mostrado a continuación.
+\begin{minted}{python}
+for n in range(len(arreglo)):
+    i=arreglo[n]
+    r, v=SaltaSalta_ej1(i)
+    # Grafique la trayectoria de cada masa en el plano x-y
+    rx.append(r[:,0])
+    ry.append(r[:,1])
+    vx.append(v[:,0])
+    vy.append(v[:,1])
+
+    ax1.plot(rx[n],ry[n],label=r'$\tilde{v}_0$='+str(i))
+\end{minted}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/4_ej1_0.png}
+\caption{Varias soluciones a la ecuación con múltiples velocidades iniciales.} \label{g4_ej1:fig:graf_c4_0}
+\end{figure}
+
+
+Se busca comprobar la conservación del momento angular a través de un gráfico de fases de ángulo contra velocidad angular. Graficado en \ref{g4_ej1:fig:graf_c4_1}.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/4_ej1_1.png}
+\caption{Gráfico de fases para estudiar la conservación de momento angular.} \label{g4_ej1:fig:graf_c4_1}
+\end{figure}
+
+En el mismo ciclo en el que se programó la parte anterior se agregan las siguientes líneas:
+\begin{minted}{python}
+    theta=(np.arctan2(ry[n],rx[n]))
+    omega = np.gradient(theta, 0.01)
+    ax2.plot(theta,omega,label=r'$\tilde{v}_0$='+str(i))
+\end{minted}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/4_ej1_2.png}
+\caption{Gráfico de fases para estudiar la conservación de energía, durante una unidad de tiempo.} \label{g4_ej1:fig:graf_c4_2}
+\end{figure}
+Se busca comprobar la conservación de la energía a través de un gráfico de fases de distancia contra rapidez. Graficado en \ref{g4_ej1:fig:graf_c4_2}. También para tener una visión más clara de lo que ocurre se registra el cometa a $\tilde{v_0}=0.9$ durante 1.5 unidades de tiempo, se puede ver en la figura \ref{g4_ej1:fig:graf_c4_3}
+\begin{minted}{python}
+    v_r = np.hypot(vx[n],vy[n])
+    a_r = np.hypot(ax[n],ay[n])
+    ax3.plot(v_r,a_r, label=r'$\tilde{v}_0$='+str(round(i,2)), linestyle='--',)
+\end{minted}
+
+Las leyes de movimiento planetario de Kepler \citep{openstaxfisica1} describen el movimiento de los planetas alrededor del sol. Estas fueron formuladas en el siglo XVII por Tycho Brahe y Johannes Kepler. La primera ley establece que cada planeta se mueve a lo largo de una elipse, con el situado en un foco de esta. La segunda ley establece como el planeta barre, áreas de partes de la elipse, de igual superficie en igual tiempo. Por último, la tercera ley establece la proporcionalidad entre el cuadrado del período orbital y el cubo del semieje mayor de órbita.
+
+En general, la ecuación \eqref{g4_ej1:normalizada} depende únicamente de la velocidad normalizada del cometa. Se puede observar como no todas las velocidades logran mantener el cometa orbitando el sol (\ref{g4_ej1:fig:graf_c4_0}). Sin embargo, en la misma se observa como el cuerpo se mantiene en órbita, pero no siempre trazando elipses perfectas. Por esto también, se puede esperar que el cuerpo tarde o temprano escape de su órbita. Lo importante, es que aquellos que se mantienen orbitando el sol si describen una elipse, como establece la ley.
+
+La segunda ley de Kepler puede revisarse en el gráfico de fases del momento angular (\ref{g4_ej1:fig:graf_c4_1}). Se observa que las curvas parecen simétricas, al menos cuando el cuerpo se mantiene en órbita. Por lo que estimamos que el modelo y la solución numérica coinciden.  
+
+Para verificar la tercera ley fue necesario agregar al ciclo que se registrará la longitud del semieje mayor y el período en el que se recorre, se considerará solo la primera vuelta que den al cuerpo. Luego, se grafican los puntos y se estima una recta por método de mínimos cuadrados, especialmente para conocer la pendiente de la recta. Sea el gráfico resultante la figura \ref{g4_ej1:fig:graf_c4_6}.
+
+\begin{minted}{python}
+	peri=np.argmin(r_r)
+    afel=np.argmax(r_r)
+    r_min = r_r[peri]
+    r_max = r_r[afel]
+    a= (r_min + r_max) / 2 
+    indices = np.where(np.diff(np.sign(r_r - r_min)))[0]
+    T = (indices[1] - indices[0]) * 0.01 
+    Ts[n]=(T**2) 
+    aaa[n]=(a*2*np.pi)  
+    ax5.scatter(a*2*np.pi, T**2)
+
+ajuste_Ley3=np.polyfit(aaa,Ts,1)
+a1,a0=ajuste_Ley3
+y=lambda x : a1*x + a0
+
+ax5.plot(aaa, y(aaa),label=f"Pendiente de recta {round(a1,10)}")
+\end{minted}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/4_ej1_6.png}
+\caption{Gráfico Período al cuadrado contra longitud de semieje mayor al cubo.} \label{g4_ej1:fig:graf_c4_6}
+\end{figure}
+
+De \ref{g4_ej1:fig:graf_c4_6} se puede observar una recta de parecer constante, sin embargo, según el ajuste hecho, la pendiente es diminuta y negativa, por lo que puede ser indicio de que la estimación numérica está errónea, especialmente considerando que todas las magnitudes consideradas son positivas. Por esto, los resultados de la revisión de la tercera ley de Kepler son no concluyentes.
+
+\section{Análisis de resultados}
+El llegar a la ecuación \eqref{g4_ej1:normalizada} es sumamente útil para llevar a cabo la solución numérica más rápido, lamentablemente, el tiempo no acompaño para poder optimizar los procesos de cálculo. A la hora de graficar, resultó beneficioso que las condiciones iniciales solo tuvieran un término que variar, aun así el sistema presenta varios casos interesantes, especialmente los extremos.
+
+En cuanto a los resultados de la conservación del momento angular (\ref{g4_ej1:fig:graf_c4_1}), claramente se da en los casos donde el cometa orbita al sol. En las otras situaciones, la curva del gráfico presenta cambios bruscos, y, a pesar de replicarse cíclicamente, estos no son simétricos, por lo que concluimos que no se puede conservar el momento angular. Esto, obviamente, es aparte de poder observar que el cuerpo se aleja para no volver del sol, es más revisar su comportamiento en el gráfico de fases puede ahorrar capacidad de cálculo, al revisar si su comportamiento es muy brusco. De ser este último caso cierto, entonces, el cometa eventualmente escapará del sol.
+ 
+Para poder verificar mejor la posibilidad de la conservación de energía en caso $\tilde{v}_0=0.9$, ampliando el período de tiempo graficado. La figura \ref{g4_ej1:fig:graf_c4_3} muestra como el cuerpo vuelve a sus condiciones iniciales varias ocasiones en el intervalo de tiempo graficado, o al menos eso se alcanza a observar al agrndar la imagen en el gráfico (\ref{g4_ej1:fig:graf_c4_x}). Esta es otra manera de revisar que tenderá a hacer el cuerpo más adelante, considerando que talvez los puntos no se repiten en el gráfico (talvez se mantengan muy unidos), da una idea de cuan volátil es el comportamiento del cuerpo.
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/4_ej1_3.png}
+\caption{Gráfico de fases para estudiar la conservación de energía en el caso de que el cometa se mantenga en órbita.} \label{g4_ej1:fig:graf_c4_3}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[scale=0.75]{../img/4_ej1_x.png}
+\caption{Gráfico de fases para estudiar la conservación de energía en el caso de que el cometa se mantenga en órbita.} \label{g4_ej1:fig:graf_c4_x}
+\end{figure}
+
+Al revisar nuestros resultados y compararlos con lo definido en las leyes de Kepler se dan ocasiones donde la teoría está enmarcada en un sistema específico, mientras nuestra simulación es más simple y general. Aun así se llegó a resultados esperados y, a excepción del caso de la tercera ley, donde, suponemos, se cometió un error al programar.
+
+
+
+\section*{Conclusiones}
+Para llegar a esta simplificación del problema de Kepler es vital la normalización de la ecuación diferencial. Sobre esta ecuación es aplicado el método del salto de la rana para estimar la trayectoria del cuerpo a distintas velocidades iniciales, sobre las cuales se consideran las soluciones que se mantengan en órbita del cuerpo mayor y todas las otras que tengan velocidades iniciales menores a esta. Tras ello, con relaciones derivadas de la solución de la ecuación, se verificó la conservación de momento angular y de la energía, para terminar comprobando el cumplimiento de las Leyes de Kepler en el sistema. Teniendo ciertas problemáticas al verificar la segunda ley de movimiento planetario.
+Fue esté problema el único impedimento encontrado para lograr los objetivos propuestos en su totalidad.
+
+\end{document}

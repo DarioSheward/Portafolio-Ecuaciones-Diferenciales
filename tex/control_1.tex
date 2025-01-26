@@ -1,0 +1,121 @@
+\documentclass[../portafolio.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Control derivada numérica}
+\label{g0_c1}
+\hfill \textbf{Fecha de la actividad:} 30 de octubre de 2024
+
+\medskip
+
+En este capítulo, a partir de un esquema numérico de primera derivadas se determina el error de truncamiento de este, utilizando expansión de series de Taylor. Además, se toma en consideración el error de redondeo para estimar el error absoluto del esquema.
+
+\section*{Objetivos}
+\begin{itemize}
+\item Determinar el orden de error de truncamiento entre una derivada numérica y una analítica.
+\item Estimar el valor absoluto del esquema anterior en función de h y x, considerando los errores de redondeo.
+\end{itemize}
+
+\section{Error de truncamiento}
+Dado un esquema de diferencias entre puntos para estimar la derivada de una función, presenta un error comparado con la derivada analítica de la misma. Recordar la definición de derivada \eqref{g0_c1:eq:defder}, donde al ser un límite, el valor de h es infinitesimalmente pequeño, lo cual a la hora de calcular estos límites numéricamente, siempre generará un error de truncamiento \citep{navarro2024errores}.
+\begin{equation}\label{g0_c1:eq:defder}
+f'(x)=\lim_{h\rightarrow 0}\frac{f(x+h)-f(x)}{h}
+\end{equation}
+\\
+Para estimar este error, se considerará una expansión en series de Taylor de $f$, respecto a los puntos donde la función es evaluada y un entorno, que en este caso será $a$. Recordar a esta como una aproximación a una función mediante la suma infinita de polinomios basados en las derivadas de esta \citep{Stewart2001}.
+\begin{equation}\label{g0_c1:eq:series_de_Taylor}
+f(x)=f(a)+\frac{f'(a)}{1!}(x-a)+ \frac{f''(a)}{2!}(x-a)^2+\frac{f^{(3)}(a)}{3!}(x-a)^3\quad ...
+\end{equation}
+
+En este caso expandiremos, la función evaluada en $x+h$, en un entorno $x$, con $0<h<1$.
+\begin{equation}\label{g0_c1:eq:expansion2}
+f(x+h)=f(x)+\frac{f'(x)}{1!}h+ \frac{f''(x)}{2!}h^2+\frac{f^{(3)}(x)}{3!}h^3 \quad ...
+\end{equation}
+
+A partir de esto expresamos la derivada en función de estos polinomios.
+\begin{align}\notag
+hf'(x)=&f(x+h)-f(x)+\frac{f''(x)}{2!}h^2+\frac{f^{(3)}(x)}{3!}h^3 \quad ...\\ 
+f'(x)=&\frac{f(x+h)-f(x)}{h}+\frac{f''(x)}{2!}h+\frac{f^{(3)}(x)}{3!}h^2 \quad ...\label{g0_c1:eq:1h}
+\end{align}
+
+Esto resulta sumamente útil ante el ejercicio a resolver, donde se nos da el esquema de derivadas.
+\begin{equation}\label{g0_c1:eq:devej}
+f'_{num}(x)=\frac{-3f(x)+4f(x+h)-f(x+2h)}{2h}
+\end{equation}
+
+Sabiendo que la expansión evaluada en $x+2h$ e en el entorno $x$ es:
+\begin{equation}\label{g0_c1:eq:2h}
+f(x+2h)=f(x)+f'(x)2h+\frac{f''(x)}{2}4h^2+\frac{f^{(3)}(x)}{6}8h^3+\frac{f^{(4)}}{24}16h^4
+\end{equation}
+
+De ahora en adelante \eqref{g0_c1:eq:2h} las series se trabajarán hasta su quinto término, a solicitud del ejercicio, por lo que ahora serán aproximaciones. 
+Ahora se despeja $f'(x)$ nuevamente:
+\begin{equation}\label{g0_c1:eq:f2}
+f'(x)\simeq \frac{f(x+2h)-f(x)}{2h}+f''(x)h+\frac{f^{(3)}(x)}{3}2h^2+\frac{f^{(4)}}{3}h^3
+\end{equation}
+
+Ahora recogemos de \eqref{g0_c1:eq:1h}:
+\begin{equation}\label{g0_c1:eq:f1}
+f'(x)\simeq \frac{f(x+h)-f(x)}{h}+\frac{f''(x)}{2}h+\frac{f^{(3)}(x)}{6}h^2+\frac{f^{(4)}}{24}h^3
+\end{equation}
+
+A partir de estas dos expresiones, \eqref{g0_c1:eq:f2} y \eqref{g0_c1:eq:f1}, construiremos una expresión similar a la aproximación numérica \eqref{g0_c1:eq:devej}. Se agregarán subíndices para distinguirlas.
+\begin{align*}
+2f'_h(x)-f'_{2h}(x)&\simeq \frac{4f(x+h)-4f(x)}{2h}-\frac{f(x+2h)-f(x)}{2h}+f''(x)h-f''(x)h\\
+&+\left(\frac{2}{6}-\frac{2}{3}\right)f^{(3)}h^2+\left(\frac{2}{24}-\frac{1}{3}\right)f^{(4)}h^3
+\end{align*}
+
+Entonces, ahora podemos expresar la derivada analítica como:
+\begin{equation}
+f'_{a}(x)\simeq \frac{-3f(x)+4f(x+h)-f(x+2h)}{2h}-\frac{f^{(3)}(x)}{3}h^2-\frac{f^{(4)}(x)}{4}h^3\label{g0_c1:eq:ertrun}
+\end{equation}
+
+Sea el error de truncamiento:
+\begin{align*}
+E_{trunc}=\left|f'_a(x)-f'_{num}(x)\right|
+\end{align*}
+\begin{equation}
+E_{trunc}\simeq \frac{f^{(3)}(x)}{3}h^2+\frac{f^{(4)}(x)}{4}h^3 
+\end{equation}
+
+Como solamente se tiene control sobre el valor de h, y no sobre la derivada de la función, se categorizará el orden de magnitud del error con respecto a $h$. \\ 
+
+Entonces, el orden de magnitud del error de truncamiento del equema \eqref{g0_c1:eq:devej} es de 
+$ \mathcal{O}(h^2)$
+
+
+
+\section{Error de redondeo}
+Los computadores, al representar los números en sistemas binarios, siempre generan un error de redondeo al calcular. Para evaluar $f(x)$, considerando el error, $\varepsilon$ , lo estimaremos como $\overline{f(x)}=(1+\varepsilon_0) f(x)$. Cada vez que se evalúe un punto se le asociará un error distinto, asociado con el punto y con la máquina.\\
+
+Ahora consideramos esto para el cálculo de la derivada numérica:
+\begin{align}
+f'_{num}(x)&=\frac{-3\overline{f(x)}+4\overline{f(x+h)}+\overline{f(x+2h)}}{2h}\\
+&=\frac{-3f(x)(1+\varepsilon_0)+4f(x+h)(1+\varepsilon_1)+f(x+2h)(1+\varepsilon_2)}{2h}\label{g0_c1:eq:erred}
+\end{align}
+
+\section{Error absoluto}
+Con el error de truncamiento y redondeo considerados, ahora estimamos el error absoluto, teniendo en consideración las expresiones \eqref{g0_c1:eq:ertrun} y \eqref{g0_c1:eq:erred}.
+
+\begin{align}
+E_{abs}&=\left|f'_a(x)-f'_{num}(x)\right|\\
+&\simeq\left|\frac{f^{(3)}(x)}{3}h^2+\frac{f^{(4)}(x)}{4}h^3\right. \\
+&+\left. \frac{-3f(x)\varepsilon_0+4f(x+h)\varepsilon_1+f(x+2h)\varepsilon_2}{2h}\right| \notag
+\end{align}
+
+Sea esta nuestra estimación del error absoluto de el esquema de derivada \eqref{g0_c1:eq:devej}. Donde $\varepsilon_i$, depende de la precisión del método de cálculo y de cual número se esta evaluando. Esto también implica que el error absoluto depende de $h$, $x$ y como se este evaluando la función.\\
+
+En el caso de considerar que todas las derivadas que no consideramos con anterioridad, son cero, entonces, podemos considerar una desigualdad triangular.
+
+\begin{align}
+E_{abs}&\leq \left|\frac{f^{(3)}(x)}{3}h^2\right|+\left|\frac{f^{(4)}(x)}{4}h^3\right| \\
+&+\left| \frac{-3f(x)\varepsilon_0+4f(x+h)\varepsilon_1+f(x+2h)\varepsilon_2}{2h}\right|
+\end{align}
+\section{Análisis de resultados}
+El error de truncamiento estimado para el esquema de derivación es de un orden magnitud similar al de una derivada centrada. Destacar que este esquema tiene errores bajos para polinomios de grado 2, o menor, y funciones logarítmicas, al menos cuando se trata de estimaciones a largo plazo. El esquema no sería recomendable para trabajar con funciones donde existan indeterminaciones, gráficamente, comportamientos asintóticos en el eje y. En el caso de que la aproximación que genere el esquema no sea lo suficientemente preciso, el utilizar otro esquema y estimar su error, tal como lo hicimos anteriormente.\\
+
+El estimar el error absoluto se presenta muy dependiente del error de redondeo. El cual es sumamente específico, por lo que se ha tener claro las capacidades del sistema utilizado. Aunque este sirva para determinar la precisión de las aproximaciones numéricas, en cada caso hay que idear una manera de determinar este error por cada evaluación, e idealmente de una manera que pueda procesar un computador, por la cantidad de datos con la que suelen trabajar.
+\section*{Conclusiones}
+Se logró determinar el orden del error truncamiento del esquema de forma satisfactoria. Esto en buena parte por las aproximaciones generadas a partir de las expansiones de Taylor y el reconocer tanto las capacidades como las limitaciones de los procesos numéricos. Lo último también fue de gran importancia para estimar el error absoluto y el error de redondeo. Al llegar a estimaciones podemos considerar los objetivos logrados, siendo la principal dificultad, lo específico del error de redondeo.
+
+\end{document}
